@@ -2,7 +2,7 @@
 
 const _           = require('lodash');
 const dotpathWalk = require('dot-path-walk');
-const validator   = require('xana-validator');
+const validator   = require('xana-validator-sync');
 
 const validatePluginOpts = validator.create([
   ['commonFields', 'typeof', 'array', new TypeError('Expect pluginOpts.commonFields to be an array')],
@@ -10,7 +10,7 @@ const validatePluginOpts = validator.create([
   ['cache', 'typeof', 'number', new TypeError('Expect pluginOpts.cache to be an number')],
   ['limit', 'typeof', 'number', new TypeError('Expect pluginOpts.limit to be an number')],
   ['modelName', 'required', true, new TypeError('Expect pluginOpts.modelName to be existed')],
-  ['modelName', 'typeof', 'string', new TypeError('Expect pluginOpts.modelName to be an string')],
+  ['modelName', 'typeof', 'string', new TypeError('Expect pluginOpts.modelName to be an string')]
 ]);
 
 
@@ -24,16 +24,15 @@ const validatePluginOpts = validator.create([
  * @param {Number} [pluginOpts.limit]
  * @param {String} pluginOpts.modelName
  */
-function readached(schema, pluginOpts) {
+function plugin(schema, pluginOpts) {
   pluginOpts = _.defaults({}, pluginOpts, {
     commonFields: [],
     secretFields: ['__v'],
     limit: 100
   });
 
-  validatePluginOpts(pluginOpts, (errors) => {
-
-  });
+  const validationError = validatePluginOpts(pluginOpts);
+  if (validationError) throw new TypeError(validationError.message);
 
   /**
    *
@@ -50,7 +49,11 @@ function readached(schema, pluginOpts) {
     extras = _.castArray(extras);
     extras = [...pluginOpts.commonFields, ..._.without(extras, ...pluginOpts.secretFields)];
 
-    opts       = _.defaults({}, opts, {limit: pluginOpts.limit});
+    opts       = _.defaults({}, opts, {
+      limit: pluginOpts.limit,
+      lean: true,
+      cache: pluginOpts.cache
+    });
     opts.limit = _.clamp(_.toSafeInteger(opts.limit), pluginOpts.limit);
     opts.sort  = opts.sort && _.mapValues(opts.sort, (val) => val > 0 ? 1 : -1);
 
@@ -67,9 +70,8 @@ function readached(schema, pluginOpts) {
 
     find = find.select(extras.join(' ')).limit(opts.limit).sort(opts.sort);
     opts.lean && find.lean();
-    if (find.cache && (opts.cache || pluginOpts.cache)) {
-      find.cache(opts.cache || pluginOpts.cache, `${pluginOpts.modelName}:list:`);
-    }
+    const cachettl = typeof find.cache == 'function' ? (opts.cache || pluginOpts.cache) : 0;
+    cachettl && find.cache(cachettl, `${pluginOpts.modelName}:list:`);
     find.exec(done);
   };
 
@@ -82,36 +84,62 @@ function readached(schema, pluginOpts) {
    * @param opts.cache
    * @param done
    */
-  schema.static.get = function (query, extras, opts, done) {
+  schema.statics.get = function (query, extras, opts, done) {
     extras = _.castArray(extras);
     extras = [...pluginOpts.commonFields, ..._.without(extras, ...pluginOpts.secretFields)];
 
-    let get = this.findOne(query);
+    opts = _.defaults({}, opts, {
+      lean: true,
+      cache: pluginOpts.cache
+    });
+
+    let find = this.findOne(query);
 
     extras.forEach((extra) => {
       for (const path of dotpathWalk(extra)) {
         if (_.has(this.schema.path(path), 'options.ref')) {
-          get.populate(path);
+          find.populate(path);
           break;
         }
       }
     });
 
-    get = get.select(extras.join(' '));
-    opts.lean && get.lean();
-    if (get.cache && (opts.cache || pluginOpts.cache)) {
-      get.cache(opts.cache || pluginOpts.cache, `${pluginOpts.modelName}:get:`);
+    find = find.select(extras.join(' '));
+    opts.lean && find.lean();
+    const cachettl = typeof find.cache == 'function' ? (opts.cache || pluginOpts.cache) : 0;
+    cachettl && find.cache(cachettl, `${pluginOpts.modelName}:list:`);
+    find.exec(done);
+  };
+
+  schema.methods.clearCacheGet = function () {
+    if (typeof pluginOpts.clearCache == 'function') {
+      pluginOpts.clearCache(`${pluginOpts.modelName}:get:*`);
     }
-    get.exec(done);
   };
 
-  schema.methods.getCommonFields = function () {
-    return _.pick(this, pluginOpts.commonFields);
+  schema.methods.clearCacheList = function () {
+    if (typeof pluginOpts.clearCache == 'function') {
+      pluginOpts.clearCache(`${pluginOpts.modelName}:list:*`);
+    }
   };
 
-  schema.methods.getNonSecretFields = function () {
-    return _.omit(this, pluginOpts.secretFields);
+  schema.methods.patch = function (patch, done) {
+    const changes = Object.assign(this, _.omit(patch, pluginOpts.readOnlyFields));
+    changes.save((err, doc) => done(err, doc));
   };
+
+  schema.methods.pickCommonFields = function () {
+    return _.pick(this.toObject(), pluginOpts.commonFields);
+  };
+
+  schema.methods.omitSecretFields = function () {
+    return _.omit(this.toObject(), pluginOpts.secretFields);
+  };
+
+  schema.post('save', function (doc) {
+    doc.clearCacheGet();
+    doc.clearCacheList();
+  });
 }
 
-module.exports = readached;
+module.exports = plugin;

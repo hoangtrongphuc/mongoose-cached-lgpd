@@ -18,6 +18,6 @@
   "homepage": "https://github.com/thenewvu/mongoose-readached#readme",
   "dependencies": {
     "lodash": "^4.15.0",
-    "dot-path-walk": "latest"
+    "dot-path-walk": "git@github.com:thenewvu/dot-path-walk.git"
   }
 }
