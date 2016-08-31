@@ -59,8 +59,8 @@ function plugin(schema, pluginOpts) {
   pluginOpts = _.defaults({}, pluginOpts, DEFAULT_PLUGIN_OPTS);
   validatePluginOpts(pluginOpts);
 
-  const LIST_CACHE_PREFIX = `${pluginOpts.modelName}:list`;
-  const GET_CACHE_PREFIX  = `${pluginOpts.modelName}:get`;
+  const LIST_CACHE_PREFIX = `${pluginOpts.modelName}:list:`;
+  const GET_CACHE_PREFIX  = `${pluginOpts.modelName}:get:`;
 
   /**
    * List documents.
