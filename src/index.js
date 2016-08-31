@@ -70,13 +70,20 @@ function plugin(schema, pluginOpts) {
    * @param done
    */
   schema.statics.list = function (query, extras, opts, done) {
+    const searchText = _.has(query, '$text.$search');
+
+    _.isFunction(opts) && ([opts, done] = [{}, opts]);
     opts       = Object.assign({}, pluginOpts, opts);
     opts.limit = _.clamp(_.toSafeInteger(opts.limit), pluginOpts.limit);
+    searchText && (opts.sort = _.assign({}, opts.sort, {score: {$meta: 'textScore'}}));
 
     extras = _.castArray(extras);
     extras = [...opts.commonFields, ..._.without(extras, ...opts.secretFields)];
 
-    let find = this.find(query);
+    // @formatter:off
+    let find = searchText ? this.find(query, {score: {$meta: 'textScore'}})
+                          : this.find(query);
+    // @formatter:on
 
     for (const extra of extras) {
       for (const path of walkExtra(extra)) {
@@ -101,13 +108,14 @@ function plugin(schema, pluginOpts) {
   };
 
   /**
-   * Get a document.
-   * @param query
+   * Get a document by its id.
+   * @param id
    * @param extras
    * @param opts
    * @param done
    */
   schema.statics.get = function (id, extras, opts, done) {
+    _.isFunction(opts) && ([opts, done] = [{}, opts]);
     opts = Object.assign({}, pluginOpts, opts);
 
     extras = _.castArray(extras);
