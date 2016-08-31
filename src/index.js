@@ -107,13 +107,13 @@ function plugin(schema, pluginOpts) {
    * @param opts
    * @param done
    */
-  schema.statics.get = function (query, extras, opts, done) {
+  schema.statics.get = function (id, extras, opts, done) {
     opts = Object.assign({}, pluginOpts, opts);
 
     extras = _.castArray(extras);
     extras = [...opts.commonFields, ..._.without(extras, ...opts.secretFields)];
 
-    let find = this.findOne(query);
+    let find = this.findById(id);
 
     for (const extra of extras) {
       for (const path of walkExtra(extra)) {
@@ -130,7 +130,7 @@ function plugin(schema, pluginOpts) {
     opts.lean && find.lean();
 
     const ttl = _.isFunction(find.cache) ? opts.cache : 0;
-    ttl && find.cache(ttl, GET_CACHE_PREFIX);
+    ttl && find.cache(ttl, `${GET_CACHE_PREFIX}${id}:`);
 
     find.exec(done);
   };
