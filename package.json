@@ -1,5 +1,5 @@
 {
-  "name": "mongoose-readached",
+  "name": "mongoose-cached-lgpd",
   "version": "1.0.0",
   "description": "",
   "main": "src/index.js",
@@ -8,14 +8,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/thenewvu/mongoose-readached.git"
+    "url": "git+ssh://git@github.com/thenewvu/mongoose-cached-lgpd.git"
   },
   "author": "Vu Le <thenewvu@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/thenewvu/mongoose-readached/issues"
+    "url": "https://github.com/thenewvu/mongoose-cached-lgpd/issues"
   },
-  "homepage": "https://github.com/thenewvu/mongoose-readached#readme",
+  "homepage": "https://github.com/thenewvu/mongoose-cached-lgpd#readme",
   "dependencies": {
     "lodash": "^4.15.0",
     "dot-path-walk": "git@github.com:thenewvu/dot-path-walk.git"
