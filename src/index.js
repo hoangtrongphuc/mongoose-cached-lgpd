@@ -22,13 +22,13 @@ const DEFAULT_PLUGIN_OPTS = {
  */
 const pluginOptsValidator = validator.create([
   // @formatter:off
-  ['commonFields', 'typeof'   , 'array'   , 'Expect commonFields to be an array'  ],
-  ['secretFields', 'typeof'   , 'array'   , 'Expect secretFields to be an array'  ],
-  ['cache'       , 'typeof'   , 'number'  , 'Expect cache to be an number'        ],
-  ['limit'       , 'typeof'   , 'number'  , 'Expect limit to be an number'        ],
-  ['lean'        , 'typeof'   , 'boolean' , 'Expect lean to be a boolean'         ],
+  ['commonFields', 'is'       , 'array'   , 'Expect commonFields to be an array'  ],
+  ['secretFields', 'is'       , 'array'   , 'Expect secretFields to be an array'  ],
+  ['cache'       , 'is'       , 'number'  , 'Expect cache to be an number'        ],
+  ['limit'       , 'is'       , 'number'  , 'Expect limit to be an number'        ],
+  ['lean'        , 'is'       , 'boolean' , 'Expect lean to be a boolean'         ],
   ['modelName'   , 'required' , true      , 'Expect modelName to be existed'      ],
-  ['modelName'   , 'typeof'   , 'string'  , 'Expect modelName to be an string'    ]
+  ['modelName'   , 'is'       , 'string'  , 'Expect modelName to be an string'    ]
   // @formatter:on
 ]);
 
