@@ -136,21 +136,23 @@ function plugin(schema, pluginOpts) {
   };
 
   /**
-   * Clear caches of getting the current document.
+   * Clear caches of listing.
+   *
    */
-  schema.methods.clearCacheGet = function () {
+  schema.statics.clearCacheAll = function () {
     if (typeof pluginOpts.clearCache == 'function') {
+      pluginOpts.clearCache(`${LIST_CACHE_PREFIX}*`);
       pluginOpts.clearCache(`${GET_CACHE_PREFIX}*`);
     }
   };
 
   /**
-   * Clear caches of listing.
-   *
+   * Clear caches of getting the current document.
    */
-  schema.methods.clearCacheList = function () {
+  schema.methods.clearCache = function () {
     if (typeof pluginOpts.clearCache == 'function') {
       pluginOpts.clearCache(`${LIST_CACHE_PREFIX}*`);
+      pluginOpts.clearCache(`${GET_CACHE_PREFIX}${this._id.toString()}:*`);
     }
   };
 
@@ -184,8 +186,7 @@ function plugin(schema, pluginOpts) {
    * Clear caches after patched a document.
    */
   schema.post('save', function (doc) {
-    doc.clearCacheGet();
-    doc.clearCacheList();
+    doc.clearCache();
   });
 }
 
