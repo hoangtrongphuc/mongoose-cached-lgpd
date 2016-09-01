@@ -85,17 +85,24 @@ function plugin(schema, pluginOpts) {
                           : this.find(query);
     // @formatter:on
 
+    const validExtras = [];
+
     for (const extra of extras) {
       for (const path of walkExtra(extra)) {
-        const schema = this.schema.path(path);
-        if (_.has(schema, 'options.ref')) {
-          find.populate(path);
+        const schema     = this.schema.path(path);
+        const schemaType = this.schema.pathType(path);
+        if (schemaType == 'adhocOrUndefined') break;
+        validExtras.push(path);
+        if (_.has(schema, 'caster.options.ref') || _.has(schema, 'options.ref')) {
+          find.populate(path, extras.filter((e) => e.startsWith(path))
+                                    .map((e) => e.replace(`${path}.`, ''))
+                                    .join(' '));
           break;
         }
       }
     }
 
-    find = find.select(extras.join(' '))
+    find = find.select(validExtras.join(' '))
                .limit(opts.limit)
                .sort(opts.sort);
 
@@ -123,17 +130,24 @@ function plugin(schema, pluginOpts) {
 
     let find = this.findById(id);
 
+    const validExtras = [];
+
     for (const extra of extras) {
       for (const path of walkExtra(extra)) {
-        const schema = this.schema.path(path);
-        if (_.has(schema, 'options.ref')) {
-          find.populate(path);
+        const schema     = this.schema.path(path);
+        const schemaType = this.schema.pathType(path);
+        if (schemaType == 'adhocOrUndefined') break;
+        validExtras.push(path);
+        if (_.has(schema, 'caster.options.ref') || _.has(schema, 'options.ref')) {
+          find.populate(path, extras.filter((e) => e.startsWith(path))
+                                    .map((e) => e.replace(`${path}.`, ''))
+                                    .join(' '));
           break;
         }
       }
     }
 
-    find = find.select(extras.join(' '));
+    find = find.select(validExtras.join(' '));
 
     opts.lean && find.lean();
 
