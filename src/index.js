@@ -167,6 +167,20 @@ function plugin(schema, pluginOpts) {
   };
 
   /**
+   * Patch a document by its id.
+   * @param id
+   * @param patch
+   * @param done
+   */
+  schema.statics.patch = function (id, patch, done) {
+    if (!isValidContentId(id)) return done(null, null);
+    this.findById(id, (err, doc) => {
+      if (err) return done(err);
+      doc.patch(patch, done);
+    });
+  }
+
+  /**
    * Clear caches of listing.
    *
    */
