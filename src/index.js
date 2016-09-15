@@ -79,6 +79,7 @@ function plugin(schema, pluginOpts) {
    */
   schema.statics.list = function (query, extras, opts, done) {
     const searchText = _.has(query, '$text.$search');
+    searchText && (query.$text.$search = query.$text.$search.toString());
 
     _.isFunction(opts) && ([opts, done] = [{}, opts]);
     opts       = Object.assign({}, pluginOpts, opts);
