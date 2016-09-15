@@ -67,8 +67,22 @@ function plugin(schema, pluginOpts) {
   pluginOpts = _.defaults({}, pluginOpts, DEFAULT_PLUGIN_OPTS);
   validatePluginOpts(pluginOpts);
 
-  const LIST_CACHE_PREFIX = `${pluginOpts.modelName}:list:`;
-  const GET_CACHE_PREFIX  = `${pluginOpts.modelName}:get:`;
+  const COUNT_CACHE_PREFIX = `${pluginOpts.modelName}:count:`;
+  const LIST_CACHE_PREFIX  = `${pluginOpts.modelName}:list:`;
+  const GET_CACHE_PREFIX   = `${pluginOpts.modelName}:get:`;
+
+  /**
+   *
+   * @param query
+   * @param done
+   */
+  schema.statics.numberOf = function (query, opts, done) {
+    _.isFunction(opts) && ([opts, done] = [{}, opts]);
+    opts = Object.assign({}, pluginOpts, opts);
+    this.count(query)
+        .cache(opts.cache, COUNT_CACHE_PREFIX)
+        .exec(done);
+  }
 
   /**
    * List documents.
@@ -188,6 +202,7 @@ function plugin(schema, pluginOpts) {
    */
   schema.statics.clearCacheAll = function () {
     if (typeof pluginOpts.clearCache == 'function') {
+      pluginOpts.clearCache(`${COUNT_CACHE_PREFIX}*`);
       pluginOpts.clearCache(`${LIST_CACHE_PREFIX}*`);
       pluginOpts.clearCache(`${GET_CACHE_PREFIX}*`);
     }
@@ -198,6 +213,7 @@ function plugin(schema, pluginOpts) {
    */
   schema.methods.clearCache = function () {
     if (typeof pluginOpts.clearCache == 'function') {
+      pluginOpts.clearCache(`${COUNT_CACHE_PREFIX}*`);
       pluginOpts.clearCache(`${LIST_CACHE_PREFIX}*`);
       pluginOpts.clearCache(`${GET_CACHE_PREFIX}${this._id.toString()}:*`);
     }
