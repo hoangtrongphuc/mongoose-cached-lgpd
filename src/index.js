@@ -42,15 +42,6 @@ function validatePluginOpts(opts) {
 }
 
 /**
- * Check if an id is valid.
- * @param id
- * @returns {boolean}
- */
-function isValidContentId(id) {
-  return typeof id == 'string' && id.length === 24;
-}
-
-/**
  * Plugin entry point.
  * @param schema
  * @param {Object}    pluginOpts
@@ -147,7 +138,6 @@ function plugin(schema, pluginOpts) {
    */
   schema.statics.get = function (id, extras, opts, done) {
     _.isFunction(opts) && ([opts, done] = [{}, opts]);
-    if (!isValidContentId(id)) return done(null, null);
     opts = Object.assign({}, pluginOpts, opts);
 
     extras = _.castArray(extras);
@@ -189,7 +179,6 @@ function plugin(schema, pluginOpts) {
    * @param done
    */
   schema.statics.patch = function (id, patch, done) {
-    if (!isValidContentId(id)) return done(null, null);
     this.findById(id, (err, doc) => {
       if (err) return done(err);
       doc.patch(patch, done);
