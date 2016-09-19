@@ -148,6 +148,7 @@ function plugin(schema, pluginOpts) {
     const validExtras = [];
 
     for (const extra of extras) {
+      if (!extra) continue;
       for (const path of walkExtra(extra.toString())) {
         const schema     = this.schema.path(path);
         const schemaType = this.schema.pathType(path);
