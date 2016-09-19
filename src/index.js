@@ -132,18 +132,19 @@ function plugin(schema, pluginOpts) {
   /**
    * Get a document by its id.
    * @param id
+   * @param query
    * @param extras
    * @param opts
    * @param done
    */
-  schema.statics.get = function (id, extras, opts, done) {
+  schema.statics.get = function (id, query, extras, opts, done) {
     _.isFunction(opts) && ([opts, done] = [{}, opts]);
     opts = Object.assign({}, pluginOpts, opts);
 
     extras = _.castArray(extras);
     extras = [...opts.commonFields, ..._.without(extras, ...opts.secretFields)];
 
-    let find = this.findById(id);
+    let find = this.findOne(Object.assign({}, query, {_id: id}));
 
     const validExtras = [];
 
