@@ -124,7 +124,7 @@ function plugin(schema, pluginOpts) {
     opts.lean && find.lean();
 
     const ttl = _.isFunction(find.cache) ? opts.cache : 0;
-    ttl && find.cache(ttl, LIST_CACHE_PREFIX);
+    ttl && opts.lean && find.cache(ttl, LIST_CACHE_PREFIX);
 
     find.exec(done);
   };
@@ -169,7 +169,7 @@ function plugin(schema, pluginOpts) {
     opts.lean && find.lean();
 
     const ttl = _.isFunction(find.cache) ? opts.cache : 0;
-    ttl && find.cache(ttl, `${GET_CACHE_PREFIX}${id}:`);
+    ttl && opts.lean && find.cache(ttl, `${GET_CACHE_PREFIX}${id}:`);
 
     find.exec(done);
   };
