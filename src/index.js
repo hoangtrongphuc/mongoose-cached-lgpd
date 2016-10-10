@@ -1,7 +1,6 @@
 'use strict'
 
 const _ = require('lodash')
-const walkExtra = require('dot-path-walk')
 const validator = require('xana-validator-sync')
 
 /**
@@ -93,25 +92,32 @@ function plugin (schema, pluginOpts) {
 
     let find = searchText ? this.find(query, {score: {$meta: 'textScore'}}) : this.find(query)
 
-    const validExtras = []
+    const populate = {}
 
     for (const extra of extras) {
-      if (!extra) continue
-      for (const path of walkExtra(extra.toString())) {
-        const schema = this.schema.path(path)
-        const schemaType = this.schema.pathType(path)
-        if (schemaType === 'adhocOrUndefined') break
-        validExtras.push(path)
-        if (_.has(schema, 'caster.options.ref') || _.has(schema, 'options.ref')) {
-          find.populate(path, extras.filter((e) => e.startsWith(path))
-                                    .map((e) => e.replace(`${path}.`, ''))
-                                    .join(' '))
-          break
+      if (!_.isString(extra) || !extra.includes('.')) {
+        continue
+      }
+
+      const nodes = extra.split('.')
+      let cur = populate
+      for (let i = 0; i < nodes.length - 1; i = i + 1) {
+        if (i === 0) {
+          extras.push(nodes[i])
+        }
+        _.set(cur, 'path', nodes[i])
+        cur.select = _.isEmpty(cur.select) ? '' : cur.select
+        cur.select = cur.select + ' ' + nodes[i + 1]
+        if (i < nodes.length - 2) {
+          cur.populate = _.isEmpty(cur.populate) ? {} : cur.populate
+          cur = cur.populate
         }
       }
     }
 
-    find = find.select(validExtras.join(' '))
+    find.populate(populate)
+
+    find = find.select(extras.join(' '))
                .limit(opts.limit)
                .sort(opts.sort)
 
@@ -140,25 +146,31 @@ function plugin (schema, pluginOpts) {
 
     let find = this.findOne(Object.assign({}, query, {_id: id}))
 
-    const validExtras = []
+    const populate = {}
 
     for (const extra of extras) {
-      if (!extra) continue
-      for (const path of walkExtra(extra.toString())) {
-        const schema = this.schema.path(path)
-        const schemaType = this.schema.pathType(path)
-        if (schemaType === 'adhocOrUndefined') break
-        validExtras.push(path)
-        if (_.has(schema, 'caster.options.ref') || _.has(schema, 'options.ref')) {
-          find.populate(path, extras.filter((e) => e.startsWith(path))
-                                    .map((e) => e.replace(`${path}.`, ''))
-                                    .join(' '))
-          break
+      if (!_.isString(extra) || !extra.includes('.')) {
+        continue
+      }
+
+      const nodes = extra.split('.')
+      let cur = populate
+      for (let i = 0; i < nodes.length - 1; i = i + 1) {
+        if (i === 0) {
+          extras.push(nodes[i])
+        }
+        _.set(cur, 'path', nodes[i])
+        cur.select = _.isEmpty(cur.select) ? '' : cur.select
+        cur.select = cur.select + ' ' + nodes[i + 1]
+        if (i < nodes.length - 2) {
+          cur.populate = _.isEmpty(cur.populate) ? {} : cur.populate
+          cur = cur.populate
         }
       }
     }
 
-    find = find.select(validExtras.join(' '))
+    find.populate(populate)
+    find = find.select(extras.join(' '))
 
     opts.lean && find.lean()
 
