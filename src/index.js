@@ -92,10 +92,12 @@ function plugin (schema, pluginOpts) {
 
     let find = searchText ? this.find(query, {score: {$meta: 'textScore'}}) : this.find(query)
 
+    const validExtras = []
     const populate = {}
 
     for (const extra of extras) {
       if (!_.isString(extra) || !extra.includes('.')) {
+        validExtras.push(extra)
         continue
       }
 
@@ -103,7 +105,7 @@ function plugin (schema, pluginOpts) {
       let cur = populate
       for (let i = 0; i < nodes.length - 1; i = i + 1) {
         if (i === 0) {
-          extras.push(nodes[i])
+          validExtras.push(nodes[i])
         }
         _.set(cur, 'path', nodes[i])
         cur.select = _.isEmpty(cur.select) ? '' : cur.select
@@ -115,9 +117,11 @@ function plugin (schema, pluginOpts) {
       }
     }
 
-    find.populate(populate)
+    if (!_.isEmpty(populate)) {
+      find.populate(populate)
+    }
 
-    find = find.select(extras.join(' '))
+    find = find.select(_.uniq(validExtras).join(' '))
                .limit(opts.limit)
                .sort(opts.sort)
 
@@ -146,10 +150,12 @@ function plugin (schema, pluginOpts) {
 
     let find = this.findOne(Object.assign({}, query, {_id: id}))
 
+    const validExtras = []
     const populate = {}
 
     for (const extra of extras) {
       if (!_.isString(extra) || !extra.includes('.')) {
+        validExtras.push(extra)
         continue
       }
 
@@ -157,7 +163,7 @@ function plugin (schema, pluginOpts) {
       let cur = populate
       for (let i = 0; i < nodes.length - 1; i = i + 1) {
         if (i === 0) {
-          extras.push(nodes[i])
+          validExtras.push(nodes[i])
         }
         _.set(cur, 'path', nodes[i])
         cur.select = _.isEmpty(cur.select) ? '' : cur.select
@@ -169,8 +175,11 @@ function plugin (schema, pluginOpts) {
       }
     }
 
-    find.populate(populate)
-    find = find.select(extras.join(' '))
+    if (!_.isEmpty(populate)) {
+      find.populate(populate)
+    }
+
+    find = find.select(_.uniq(validExtras).join(' '))
 
     opts.lean && find.lean()
 
