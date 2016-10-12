@@ -92,36 +92,37 @@ function plugin (schema, pluginOpts) {
 
     let find = searchText ? this.find(query, {score: {$meta: 'textScore'}}) : this.find(query)
 
-    const validExtras = []
-    const populate = {}
+    const select = []
+    const populates = {}
 
     for (const extra of extras) {
       if (!_.isString(extra) || !extra.includes('.')) {
-        validExtras.push(extra)
+        select.push(extra)
         continue
       }
 
       const nodes = extra.split('.')
-      let cur = populate
+      select.push(nodes[0])
+      const firstNode = nodes[0]
+      var populate = (populates[firstNode] = populates[firstNode] || {})
+
       for (let i = 0; i < nodes.length - 1; i = i + 1) {
-        if (i === 0) {
-          validExtras.push(nodes[i])
-        }
-        _.set(cur, 'path', nodes[i])
-        cur.select = _.isEmpty(cur.select) ? '' : cur.select
-        cur.select = cur.select + ' ' + nodes[i + 1]
+        populate.path = nodes[i]
+        populate.select = populate.select || {}
+        populate.select[nodes[i + 1]] = 1
+
         if (i < nodes.length - 2) {
-          cur.populate = _.isEmpty(cur.populate) ? {} : cur.populate
-          cur = cur.populate
+          populate.populate = populate.populate || {}
+          populate = populate.populate
         }
       }
     }
 
-    if (!_.isEmpty(populate)) {
-      find.populate(populate)
+    if (!_.isEmpty(populates)) {
+      find.populate(_.values(populates))
     }
 
-    find = find.select(_.uniq(validExtras).join(' '))
+    find = find.select(_.uniq(select).join(' '))
                .limit(opts.limit)
                .sort(opts.sort)
 
@@ -150,36 +151,37 @@ function plugin (schema, pluginOpts) {
 
     let find = this.findOne(Object.assign({}, query, {_id: id}))
 
-    const validExtras = []
-    const populate = {}
+    const select = []
+    const populates = {}
 
     for (const extra of extras) {
       if (!_.isString(extra) || !extra.includes('.')) {
-        validExtras.push(extra)
+        select.push(extra)
         continue
       }
 
       const nodes = extra.split('.')
-      let cur = populate
+      select.push(nodes[0])
+      const firstNode = nodes[0]
+      var populate = (populates[firstNode] = populates[firstNode] || {})
+
       for (let i = 0; i < nodes.length - 1; i = i + 1) {
-        if (i === 0) {
-          validExtras.push(nodes[i])
-        }
-        _.set(cur, 'path', nodes[i])
-        cur.select = _.isEmpty(cur.select) ? '' : cur.select
-        cur.select = cur.select + ' ' + nodes[i + 1]
+        populate.path = nodes[i]
+        populate.select = populate.select || {}
+        populate.select[nodes[i + 1]] = 1
+
         if (i < nodes.length - 2) {
-          cur.populate = _.isEmpty(cur.populate) ? {} : cur.populate
-          cur = cur.populate
+          populate.populate = populate.populate || {}
+          populate = populate.populate
         }
       }
     }
 
-    if (!_.isEmpty(populate)) {
-      find.populate(populate)
+    if (!_.isEmpty(populates)) {
+      find.populate(_.values(populates))
     }
 
-    find = find.select(_.uniq(validExtras).join(' '))
+    find = find.select(_.uniq(select).join(' '))
 
     opts.lean && find.lean()
 
@@ -255,19 +257,19 @@ function plugin (schema, pluginOpts) {
    * Clear caches after patched a document.
    */
   schema.post('save', function (doc) {
-    doc.clearCache()
+    doc && doc.clearCache()
   })
 
   schema.post('remove', function (doc) {
-    doc.clearCache()
+    doc && doc.clearCache()
   })
 
   schema.post('findOneAndRemove', function (doc) {
-    doc.clearCache()
+    doc && doc.clearCache()
   })
 
   schema.post('findOneAndUpdate', function (doc) {
-    doc.clearCache()
+    doc && doc.clearCache()
   })
 }
 
