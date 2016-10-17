@@ -199,7 +199,7 @@ function plugin (schema, pluginOpts) {
    */
   schema.statics.patch = function (id, patch, done) {
     this.findById(id, (err, doc) => {
-      if (err) return done(err)
+      if (err || !doc) return done(err, null)
       doc.patch(patch, done)
     })
   }
