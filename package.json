@@ -18,7 +18,6 @@
   "homepage": "https://github.com/thenewvu/mongoose-cached-lgpd#readme",
   "dependencies": {
     "lodash": "^4.15.0",
-    "dot-path-walk": "git@github.com:thenewvu/dot-path-walk.git",
     "xana-validator-sync": "git@github.com:thenewvu/xana-validator-sync.git"
   }
 }
