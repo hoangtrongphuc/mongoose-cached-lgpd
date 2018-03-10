@@ -17,7 +17,6 @@
   },
   "homepage": "https://github.com/thenewvu/mongoose-cached-lgpd#readme",
   "dependencies": {
-    "lodash": "^4.15.0",
-    "xana-validator-sync": "https://github.com/thenewvu/xana-validator-sync.git"
+    "lodash": "^4.15.0"
   }
 }
