@@ -1,7 +1,7 @@
 'use strict'
 
 const _ = require('lodash')
-const validator = require('xana-validator-sync')
+//const validator = require('xana-validator-sync')
 
 /**
  * Default plugin options.
@@ -18,7 +18,7 @@ const DEFAULT_PLUGIN_OPTS = {
  * Plugin option validator.
  * @type {Function}
  */
-const pluginOptsValidator = validator.create([
+/*const pluginOptsValidator = validator.create([
   ['commonFields', 'is', 'array', 'Expect commonFields to be an array'],
   ['secretFields', 'is', 'array', 'Expect secretFields to be an array'],
   ['cache', 'is', 'number', 'Expect cache to be an number'],
@@ -26,16 +26,16 @@ const pluginOptsValidator = validator.create([
   ['lean', 'is', 'boolean', 'Expect lean to be a boolean'],
   ['modelName', 'required', true, 'Expect modelName to be existed'],
   ['modelName', 'is', 'string', 'Expect modelName to be an string']
-])
+])*/
 
 /**
  * Validate plugin options.
  * @param opts - Plugin options.
  */
-function validatePluginOpts (opts) {
-  const error = pluginOptsValidator(opts)
-  if (error) throw new TypeError(error.message)
-}
+//function validatePluginOpts (opts) {
+//  const error = pluginOptsValidator(opts)
+//  if (error) throw new TypeError(error.message)
+//}
 
 /**
  * Plugin entry point.
@@ -52,7 +52,7 @@ function validatePluginOpts (opts) {
  */
 function plugin (schema, pluginOpts) {
   pluginOpts = _.defaults({}, pluginOpts, DEFAULT_PLUGIN_OPTS)
-  validatePluginOpts(pluginOpts)
+//  validatePluginOpts(pluginOpts)
 
   const COUNT_CACHE_PREFIX = `${pluginOpts.modelName}:count:`
   const LIST_CACHE_PREFIX = `${pluginOpts.modelName}:list:`
